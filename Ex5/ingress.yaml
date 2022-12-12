@@ -1,0 +1,14 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rm-ingress
+#  namespace: gb-redmine
+spec:
+  ingressClassName: nginx
+  defaultBackend:
+    service:
+      name: rm-service
+      port:
+        number: 80
+    

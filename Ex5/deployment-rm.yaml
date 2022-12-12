@@ -1,0 +1,58 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rm-app
+  namespace: gb-redmine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rm-app
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: rm-app
+    spec:
+      containers:
+      - image: redmine:4.1.1
+        name: redmine
+        env:
+          - name: REDMINE_DB_POSTGRES
+            value: "postg-service"
+          - name: REDMINE_DB_USERNAME
+            value: "dbuser"
+          - name: REDMINE_DB_DATABASE
+            value: "redminedb"
+          - name: REDMINE_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postg-secret
+                key: PASS
+          - name: REDMINE_SECRET_KEY_BASE
+            valueFrom:
+              secretKeyRef:
+                name: rm-secret
+                key: KEY
+        livenessProbe:  
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10 
+          periodSeconds: 10
+          timeoutSeconds: 60
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 60
+          successThreshold: 1
+          failureThreshold: 3                
+        ports:
+        - containerPort: 3000
